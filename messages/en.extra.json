@@ -1,0 +1,51 @@
+{
+  "Nav": { "dashboard": "Overview", "training": "Bot training", "admin": "Owner panel" },
+  "Theme": { "toggle": "Toggle theme (dark / light)" },
+  "Pricing": {
+    "title": "Plans that grow with your store",
+    "subtitle": "Start with a 7-day free trial with every feature, then pick the plan that fits.",
+    "perMonth": "/ month",
+    "orYearly": "or {price} {currency} per year",
+    "conversations": "Up to {count} conversations per month",
+    "stores": "{count, plural, one {# store} other {# stores}}",
+    "whatsapp": "WhatsApp connection",
+    "cartRecovery": "Abandoned cart recovery",
+    "cta": "Start your free trial",
+    "empty": "Plans are coming soon"
+  },
+  "Training": {
+    "title": "Bot training",
+    "subtitle": "Teach the bot your store's keywords, custom replies, and product and subscription details.",
+    "addTitle": "Add new training",
+    "kindLabel": "Training type",
+    "kinds": { "keyword": "Keywords → reply", "qa": "Question and answer", "info": "Product or subscription info" },
+    "hints": {
+      "keyword": "When a customer mentions one of the keywords, the bot answers with this reply.",
+      "qa": "Put the expected question in the title and the answer in the last field.",
+      "info": "Facts the bot can rely on: product details, prices, subscriptions, warranty."
+    },
+    "fieldTitle": "Title or question (optional)",
+    "fieldKeywords": "Keywords (separate with commas)",
+    "fieldContent": "Reply or information",
+    "fieldLang": "Language",
+    "lang": { "any": "All languages", "ar": "Arabic", "en": "English" },
+    "add": "Add",
+    "adding": "Adding...",
+    "listTitle": "Bot training items",
+    "empty": "You haven't added any training yet.",
+    "active": "Active",
+    "disabled": "Paused",
+    "delete": "Delete",
+    "confirm": "Confirm delete",
+    "cancel": "Cancel",
+    "errors": {
+      "required": "Write the reply or information",
+      "keywordsRequired": "Add at least one keyword",
+      "limit": "You reached the limit (200 items)",
+      "generic": "Something went wrong, please try again"
+    },
+    "ctaTitle": "Train your bot on your store",
+    "ctaHint": "Add keywords, replies, and product details so the bot answers accurately.",
+    "ctaButton": "Open bot training"
+  }
+}
