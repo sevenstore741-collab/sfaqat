@@ -22,27 +22,32 @@ export default function SignupForm() {
     setError(null);
     setNotice(null);
 
-    const { data, error } = await createClient().auth.signUp({
-      email,
-      password,
-      options: {
-        data: { business_name: businessName, lang: locale },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard`,
-      },
-    });
-    setLoading(false);
+    try {
+      const { data, error } = await createClient().auth.signUp({
+        email,
+        password,
+        options: {
+          data: { business_name: businessName, lang: locale },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/${locale}/dashboard`,
+        },
+      });
 
-    if (error) {
-      if (error.code === "user_already_exists") setError(t("errors.userExists"));
-      else if (error.code === "weak_password") setError(t("errors.weakPassword"));
-      else setError(t("errors.generic"));
-      return;
-    }
-    if (data.session) {
-      router.replace("/dashboard");
-      router.refresh();
-    } else {
-      setNotice(t("checkEmail"));
+      if (error) {
+        if (error.code === "user_already_exists") setError(t("errors.userExists"));
+        else if (error.code === "weak_password") setError(t("errors.weakPassword"));
+        else setError(`${t("errors.generic")} (${error.code ?? error.message})`);
+        return;
+      }
+      if (data.session) {
+        router.replace("/dashboard");
+        router.refresh();
+      } else {
+        setNotice(t("checkEmail"));
+      }
+    } catch (err) {
+      setError(`${t("errors.generic")} (${err instanceof Error ? err.message : "network"})`);
+    } finally {
+      setLoading(false);
     }
   }
 
