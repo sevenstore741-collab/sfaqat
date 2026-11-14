@@ -17,14 +17,20 @@ export default function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await createClient().auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      setError(t("errors.invalidLogin"));
-      return;
+
+    try {
+      const { error } = await createClient().auth.signInWithPassword({ email, password });
+      if (error) {
+        setError(t("errors.invalidLogin"));
+        return;
+      }
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setError(`${t("errors.generic")} (${err instanceof Error ? err.message : "network"})`);
+    } finally {
+      setLoading(false);
     }
-    router.replace("/dashboard");
-    router.refresh();
   }
 
   return (
