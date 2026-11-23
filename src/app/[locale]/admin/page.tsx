@@ -48,45 +48,56 @@ export default async function AdminPage({
 
   const tab = TABS.find((t) => t.key === rawTab)?.key ?? "brand";
   const { brand, messages } = await getSettings();
-  const admin = createAdminClient();
 
   let plans: AdminPlan[] = [];
   let coupons: AdminCoupon[] = [];
+  let loadError: string | null = null;
 
-  if (tab === "plans") {
-    const { data } = await admin.from("plans").select("*").order("price_monthly", { ascending: true });
-    plans = ((data ?? []) as Row[]).map((p) => {
-      const limits = (p.limits ?? {}) as { stores?: number; conversations?: number };
-      const features = (p.features ?? {}) as { whatsapp?: boolean; cart_recovery?: boolean };
-      return {
-        id: String(p.id),
-        code: String(p.code),
-        name_ar: String(p.name_ar),
-        name_en: String(p.name_en),
-        price_monthly: Number(p.price_monthly ?? 0),
-        price_yearly: Number(p.price_yearly ?? 0),
-        currency: String(p.currency ?? "SAR"),
-        is_active: Boolean(p.is_active),
-        conversations: Number(limits.conversations ?? 0),
-        stores: Number(limits.stores ?? 0),
-        whatsapp: Boolean(features.whatsapp),
-        cart_recovery: Boolean(features.cart_recovery),
-      };
-    });
-  }
-
-  if (tab === "coupons") {
-    const { data } = await admin.from("coupons").select("*").order("created_at", { ascending: false });
-    coupons = ((data ?? []) as Row[]).map((c) => ({
-      id: String(c.id),
-      code: String(c.code),
-      discount_type: c.discount_type === "fixed" ? "fixed" : "percent",
-      discount_value: Number(c.discount_value ?? 0),
-      max_redemptions: c.max_redemptions == null ? null : Number(c.max_redemptions),
-      redeemed_count: Number(c.redeemed_count ?? 0),
-      expires_at: c.expires_at ? String(c.expires_at) : null,
-      is_active: Boolean(c.is_active),
-    }));
+  if (tab === "plans" || tab === "coupons") {
+    if (!process.env.SUPABASE_SECRET_KEY) {
+      loadError = "المتغير SUPABASE_SECRET_KEY غير مضاف في إعدادات Vercel.";
+    } else {
+      try {
+        const admin = createAdminClient();
+        if (tab === "plans") {
+          const { data, error } = await admin.from("plans").select("*").order("price_monthly", { ascending: true });
+          if (error) throw new Error(error.message);
+          plans = ((data ?? []) as Row[]).map((p) => {
+            const limits = (p.limits ?? {}) as { stores?: number; conversations?: number };
+            const features = (p.features ?? {}) as { whatsapp?: boolean; cart_recovery?: boolean };
+            return {
+              id: String(p.id),
+              code: String(p.code),
+              name_ar: String(p.name_ar),
+              name_en: String(p.name_en),
+              price_monthly: Number(p.price_monthly ?? 0),
+              price_yearly: Number(p.price_yearly ?? 0),
+              currency: String(p.currency ?? "SAR"),
+              is_active: Boolean(p.is_active),
+              conversations: Number(limits.conversations ?? 0),
+              stores: Number(limits.stores ?? 0),
+              whatsapp: Boolean(features.whatsapp),
+              cart_recovery: Boolean(features.cart_recovery),
+            };
+          });
+        } else {
+          const { data, error } = await admin.from("coupons").select("*").order("created_at", { ascending: false });
+          if (error) throw new Error(error.message);
+          coupons = ((data ?? []) as Row[]).map((c) => ({
+            id: String(c.id),
+            code: String(c.code),
+            discount_type: c.discount_type === "fixed" ? "fixed" : "percent",
+            discount_value: Number(c.discount_value ?? 0),
+            max_redemptions: c.max_redemptions == null ? null : Number(c.max_redemptions),
+            redeemed_count: Number(c.redeemed_count ?? 0),
+            expires_at: c.expires_at ? String(c.expires_at) : null,
+            is_active: Boolean(c.is_active),
+          }));
+        }
+      } catch (e) {
+        loadError = `تعذر تحميل البيانات: ${e instanceof Error ? e.message : "خطأ غير معروف"}. تأكد أنك شغّلت SQL-2.`;
+      }
+    }
   }
 
   const brandName = locale === "ar" ? brand.name_ar : brand.name_en;
@@ -110,10 +121,12 @@ export default async function AdminPage({
         ))}
       </nav>
 
+      {loadError && <p className="glass mb-6 p-5 text-sm text-red-400">{loadError}</p>}
+
       {tab === "brand" && <BrandForm initial={brand} />}
       {tab === "messages" && <MessagesForm initial={messages} />}
-      {tab === "plans" && <PlansForm plans={plans} />}
-      {tab === "coupons" && <CouponsManager coupons={coupons} />}
+      {tab === "plans" && !loadError && <PlansForm plans={plans} />}
+      {tab === "coupons" && !loadError && <CouponsManager coupons={coupons} />}
     </div>
   );
 }
